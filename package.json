@@ -1,0 +1,23 @@
+{
+  "name": "openspec-pi",
+  "version": "0.1.0",
+  "description": "OpenSpec deep integration for pi: native openspec tool, auto-context injection, /ospec command, plus official opsx prompts and openspec skills",
+  "license": "MIT",
+  "keywords": ["pi-package", "pi", "openspec", "spec-driven-development", "sdd", "extension", "ai-coding-agent", "coding-agent"],
+  "author": "Tobias Weiss",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tobias-weiss-ai-xr/pi-openspec.git"
+  },
+  "files": ["extensions", "skills", "prompts", "README.md", "LICENSE"],
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": "*",
+    "typebox": "*"
+  },
+  "pi": {
+    "extensions": ["./extensions"],
+    "skills": ["./skills"],
+    "prompts": ["./prompts"],
+    "image": "https://raw.githubusercontent.com/tobias-weiss-ai-xr/pi-openspec/main/assets/pi-openspec.png"
+  }
+}
