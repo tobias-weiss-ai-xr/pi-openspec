@@ -1,16 +1,16 @@
 ---
 name: openspec-archive-change
-description: Archive a completed change in the experimental workflow. Use when the user wants to finalize and archive a change after implementation is complete.
+description: Archive a completed change using the native OpenSpec CLI archive command. Use when the user wants to finalize and archive a change after implementation is complete. Pre-flight checks warn about incomplete artifacts or tasks; spec syncing is handled by the CLI unless --skip-specs is chosen.
 allowed-tools: Bash(openspec:*)
 license: MIT
-compatibility: Requires openspec CLI.
+compatibility: Requires openspec CLI >= 1.9.0.
 metadata:
   author: openspec
   version: "1.0"
-  generatedBy: "1.6.0"
+  generatedBy: "1.9.0"
 ---
 
-Archive a completed change in the experimental workflow.
+Archive a completed change using the native `openspec archive` command.
 
 **Store selection:** If the user names a store (a store is a standalone OpenSpec repo registered on this machine) or the work lives in one, run `openspec store list --json` to discover registered store ids, then pass `--store <id>` on the commands that read or write specs and changes (`new change`, `status`, `instructions`, `list`, `show`, `validate`, `archive`, `doctor`, `context`). Other commands do not take the flag. Hints printed by commands already carry the flag; keep it on follow-ups. Without a store, commands act on the nearest local `openspec/` root.
 
@@ -27,7 +27,7 @@ Archive a completed change in the experimental workflow.
 
    **IMPORTANT**: Do NOT guess or auto-select a change. Always let the user choose.
 
-2. **Check artifact completion status**
+2. **Pre-flight: artifact completion status**
 
    Run `openspec status --change "<name>" --json` to check artifact completion.
 
@@ -37,63 +37,63 @@ Archive a completed change in the experimental workflow.
    - `artifacts`: List of artifacts with their status (`done` or other)
 
    **If any artifacts are not `done`:**
-   - Display warning listing incomplete artifacts
-   - Use **AskUserQuestion tool** to confirm user wants to proceed
-   - Proceed if user confirms
+   - Display a warning listing the incomplete artifacts
+   - Use **AskUserQuestion tool** to confirm the user still wants to proceed
+   - Proceed only if the user confirms
 
-3. **Check task completion status**
+3. **Pre-flight: task completion status**
 
    Read the tasks file (typically `tasks.md`) to check for incomplete tasks.
 
    Count tasks marked with `- [ ]` (incomplete) vs `- [x]` (complete).
 
    **If incomplete tasks found:**
-   - Display warning showing count of incomplete tasks
-   - Use **AskUserQuestion tool** to confirm user wants to proceed
-   - Proceed if user confirms
+   - Display a warning with the count of incomplete tasks
+   - Use **AskUserQuestion tool** to confirm the user still wants to proceed
+   - Proceed only if the user confirms
 
-   **If no tasks file exists:** Proceed without task-related warning.
+   **If no tasks file exists:** Proceed without a task-related warning.
 
-4. **Assess delta spec sync state**
+4. **Decide on spec syncing**
 
-   Use `artifactPaths.specs.existingOutputPaths` from status JSON to check for delta specs. If none exist, proceed without sync prompt.
+   Use `artifactPaths.specs.existingOutputPaths` from the status JSON to check for delta specs.
 
-   **If delta specs exist:**
-   - Compare each delta spec with its corresponding main spec at `openspec/specs/<capability>/spec.md`
-   - Determine what changes would be applied (adds, modifications, removals, renames)
-   - Show a combined summary before prompting
+   - **No delta specs** (doc-only / infra change): the CLI has nothing to sync; proceed without flags.
+   - **Delta specs exist AND the user wants main specs updated**: the CLI syncs them automatically during archive — no special flag.
+   - **Delta specs exist but the user wants to keep main specs untouched** (e.g., archived after a manual sync, or infra/doc-only): pass `--skip-specs`.
 
-   **Prompt options:**
-   - If changes needed: "Sync now (recommended)", "Archive without syncing"
-   - If already synced: "Archive now", "Sync anyway", "Cancel"
+   Only pass `--skip-specs` when the user explicitly chooses it; the default is to let the CLI sync.
 
-   If user chooses sync, use Task tool (subagent_type: "general-purpose", prompt: "Use Skill tool to invoke openspec-sync-specs for change '<name>'. Delta spec analysis: <include the analyzed delta spec summary>"). Proceed to archive regardless of choice.
-
-5. **Perform the archive**
-
-   Create an `archive` directory under `planningHome.changesDir` if it doesn't exist:
-   ```bash
-   mkdir -p "<planningHome.changesDir>/archive"
-   ```
-
-   Generate target name using current date: `YYYY-MM-DD-<change-name>`
-
-   **Check if target already exists:**
-   - If yes: Fail with error, suggest renaming existing archive or using different date
-   - If no: Move `changeRoot` to the archive directory
+5. **Perform the archive (native)**
 
    ```bash
-   mv "<changeRoot>" "<planningHome.changesDir>/archive/YYYY-MM-DD-<name>"
+   openspec archive "<name>" --yes --json
    ```
 
-6. **Display summary**
+   Add flags as decided:
+   - `--skip-specs` → skip the spec update step
+   - `--no-validate` → skip validation (only if the user insists after a warning; the CLI asks for confirmation itself)
 
-   Show archive completion summary including:
+   Parse the JSON result:
+   - `archive.change` — change name
+   - `archive.archivedAs` — target name (`YYYY-MM-DD-<name>`)
+   - `archive.path` — archive location
+   - `archive.specsUpdated` — whether main specs were updated by the CLI
+   - `root` — root the archive ran against
+
+6. **Verify and display summary**
+
+   If the user wants belt-and-braces verification, run:
+   ```bash
+   openspec validate --archived
+   ```
+
+   Show the archive completion summary including:
    - Change name
    - Schema that was used
-   - Archive location
-   - Whether specs were synced (if applicable)
-   - Note about any warnings (incomplete artifacts/tasks)
+   - Archive location (from `archive.path`)
+   - Whether specs were synced (`specsUpdated`)
+   - Any warnings (incomplete artifacts/tasks) and whether the user chose `--skip-specs`
 
 **Output On Success**
 
@@ -102,17 +102,31 @@ Archive a completed change in the experimental workflow.
 
 **Change:** <change-name>
 **Schema:** <schema-name>
-**Archived to:** the archive path derived from `planningHome.changesDir`/YYYY-MM-DD-<name>/
-**Specs:** ✓ Synced to main specs (or "No delta specs" or "Sync skipped")
+**Archived to:** <archive.path>
+**Specs:** ✓ Synced to main specs (or "Not synced (--skip-specs)" / "No delta specs")
+**Validated:** ✓ `openspec validate --archived` passed
+```
 
-All artifacts complete. All tasks complete.
+**Output On Success With Warnings**
+
+```
+## Archive Complete (with warnings)
+
+**Change:** <change-name>
+**Schema:** <schema-name>
+**Archived to:** <archive.path>
+**Specs:** ✓ Synced to main specs
+
+**Warnings:**
+- Archived with 2 incomplete artifacts (user confirmed)
+- Archived with 3 incomplete tasks (user confirmed)
 ```
 
 **Guardrails**
 - Always prompt for change selection if not provided
-- Use artifact graph (openspec status --json) for completion checking
-- Don't block archive on warnings - just inform and confirm
-- Preserve .openspec.yaml when moving to archive (it moves with the directory)
-- Show clear summary of what happened
-- If sync is requested, use openspec-sync-specs approach (agent-driven)
-- If delta specs exist, always run the sync assessment and show the combined summary before prompting
+- Use the native `openspec archive` command — do NOT hand-roll a `mkdir` + `mv`
+- Use artifact graph (`openspec status --json`) for completion checking
+- Don't block archive on warnings — just inform and confirm
+- Only pass `--skip-specs` when the user explicitly chooses to skip spec updates
+- Report `specsUpdated` from the CLI JSON rather than guessing
+- Optionally confirm with `openspec validate --archived`

@@ -1,0 +1,16 @@
+schema: spec-driven
+
+context: |
+  pi-openspec is the OpenSpec deep-integration package for the pi coding
+  agent (npm: openspec-pi). It ships an extension (extensions/openspec.ts),
+  official agent skills (skills/openspec-*/SKILL.md) and slash-command
+  prompts (prompts/opsx-*.md).
+
+  Ground rules:
+  - All commands target the installed OpenSpec CLI (>= 1.9.0).
+  - Skills and prompts mirror what `openspec init --tools pi` generates and
+    must stay in sync with the CLI surface (verified by `npm run check`).
+  - The extension forwards exactly the flags CLI 1.9.0 accepts (positional
+    item names for show/validate/archive, --specs for list, --store for
+    store-scoped operations).
+  - Releases are cut on v* tags and published to npm (openspec-pi).

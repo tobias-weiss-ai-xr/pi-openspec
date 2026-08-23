@@ -1,6 +1,6 @@
 {
   "name": "openspec-pi",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "OpenSpec deep integration for pi: native openspec tool, auto-context injection, /ospec command, plus official opsx prompts and openspec skills",
   "license": "MIT",
   "keywords": ["pi-package", "pi", "openspec", "spec-driven-development", "sdd", "extension", "ai-coding-agent", "coding-agent"],
@@ -13,6 +13,10 @@
   "peerDependencies": {
     "@earendil-works/pi-coding-agent": "*",
     "typebox": "*"
+  },
+  "scripts": {
+    "check": "node scripts/check.mjs",
+    "check:full": "npm run check && openspec validate --all --strict"
   },
   "pi": {
     "extensions": ["./extensions"],
