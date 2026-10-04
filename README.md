@@ -124,6 +124,7 @@ skills/prompts in sync with the CLI:
 
 ```bash
 npm run check          # validate skill/prompt pairing + referenced slash commands + manifest/README consistency
+npm run check:ext      # JIT-load the extension with a stub API and exercise tool/command paths (needs a pi install)
 npm run check:full     # check + openspec validate --all (needs CLI on PATH)
 ```
 

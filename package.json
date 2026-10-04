@@ -24,6 +24,7 @@
     "prompts",
     "assets",
     "README.md",
+    "CHANGELOG.md",
     "LICENSE"
   ],
   "peerDependencies": {
@@ -32,6 +33,7 @@
   },
   "scripts": {
     "check": "node scripts/check.mjs",
+    "check:ext": "node scripts/smoke-ext.mjs",
     "check:full": "npm run check && openspec validate --all --strict",
     "prepack": "npm run check"
   },
