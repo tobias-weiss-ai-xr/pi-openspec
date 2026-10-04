@@ -227,7 +227,7 @@ export default function (pi: ExtensionAPI) {
                     content: [
                         {
                             type: "text",
-                            text: `Unsupported command "${params.command}". Supported: status, doctor, context, list, show, validate, instructions, archive, store, spec, new. For arbitrary commands use /ospec.`,
+                            text: `Unsupported command "${params.command}". Supported: status, doctor, context, list, show, validate, instructions, archive, store, spec, new. For arbitrary commands (change, config, templates, schemas, view, workset, version, update, init, completion, feedback) use /ospec.`,
                         },
                     ],
                     details: { command: params.command, supported: false },

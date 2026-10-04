@@ -26,13 +26,13 @@ const PROMPT_FOR_SKILL = {
   "openspec-explore": "opsx-explore",
   "openspec-continue-change": "opsx-continue",
   "openspec-apply-change": "opsx-apply",
+  "openspec-ff-change": "opsx-ff",
   "openspec-update-change": "opsx-update",
   "openspec-sync-specs": "opsx-sync",
   "openspec-verify-change": "opsx-verify",
   "openspec-archive-change": "opsx-archive",
   "openspec-bulk-archive-change": "opsx-bulk-archive",
   "openspec-onboard": "opsx-onboard",
-  "openspec-feedback": "opsx-feedback",
 };
 
 function frontmatter(file, pathStr) {

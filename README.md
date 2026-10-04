@@ -18,7 +18,7 @@ pi install npm:openspec-pi
 pi install git:github.com/tobias-weiss-ai-xr/pi-openspec
 ```
 
-Requires the [OpenSpec CLI](https://github.com/Fission-AI/OpenSpec) ≥ 1.9.0 on your `PATH`:
+Requires the [OpenSpec CLI](https://github.com/Fission-AI/OpenSpec) ≥ 1.14.0 on your `PATH`:
 
 ```bash
 npm install -g @fission-ai/openspec
@@ -33,7 +33,7 @@ Restart pi after installing.
 The agent can query spec-driven development state **during a task**, without slash
 commands — `status`, `doctor`, `context`, `list`, `show`, `validate`, `instructions`,
 `archive`, `store`, `spec`, `new`. The tool forwards exactly the flags OpenSpec CLI
-1.9.0 accepts (positional item names for `show`/`validate`/`archive`, `--specs` for
+1.14.0 accepts (positional item names for `show`/`validate`/`archive`, `--specs` for
 list, `--store` for store-scoped operations).
 
 ### 2. Auto-context injection
@@ -51,7 +51,9 @@ Run arbitrary OpenSpec CLI commands interactively: `/ospec status`, `/ospec doct
 ### 4. Official OpenSpec prompts & skills
 
 The exact same slash commands and skills that `openspec init --tools pi` generates in
-`.pi/` — now available globally via the package:
+`.pi/` — now available globally via the package. Synced to **OpenSpec CLI 1.14.0**
+(all 12 workflow profiles: `new`, `propose`, `explore`, `continue`, `apply`, `ff`,
+`update`, `sync`, `verify`, `archive`, `bulk-archive`, `onboard`):
 
 | Workflow | Slash command | Skill | What it does |
 |----------|---------------|-------|--------------|
@@ -60,13 +62,16 @@ The exact same slash commands and skills that `openspec init --tools pi` generat
 | Explore | `/opsx-explore` | `openspec-explore` | Think through an idea, compare options, clarify scope |
 | Continue | `/opsx-continue <name>` | `openspec-continue-change` | Build the next pending planning artifacts |
 | Apply | `/opsx-apply <name>` | `openspec-apply-change` | Implement a change's tasks |
+| Fast-forward | `/opsx-ff <name>` | `openspec-ff-change` | Create all artifacts needed for implementation in one go |
 | Update | `/opsx-update <name>` | `openspec-update-change` | Revise a change's artifacts, keep them coherent |
 | Sync | `/opsx-sync <name>` | `openspec-sync-specs` | Sync delta specs from a change to main specs |
 | Verify | `/opsx-verify` | `openspec-verify-change` | `validate` + `doctor` health sweep (pre-commit) |
 | Archive | `/opsx-archive <name>` | `openspec-archive-change` | Native `openspec archive` with pre-flight checks |
 | Bulk archive | `/opsx-bulk-archive` | `openspec-bulk-archive-change` | Archive several completed changes at once |
 | Onboard | `/opsx-onboard` | `openspec-onboard` | Orient in a repo/store, map changes + specs |
-| Feedback | `/opsx-feedback <msg>` | `openspec-feedback` | Submit feedback to OpenSpec maintainers |
+
+> Feedback to the OpenSpec maintainers is a plain CLI command now (no longer a
+> workflow skill): `/ospec feedback <message>`.
 
 ## Usage
 
@@ -94,7 +99,7 @@ injects its `openspec context` even without a local `openspec/` directory.
 
 ## Troubleshooting
 
-- **`openspec: command not found`** — the CLI ≥ 1.9.0 is required on `PATH`:
+- **`openspec: command not found`** — the CLI ≥ 1.14.0 is required on `PATH`:
   `npm install -g @fission-ai/openspec`. Skills declare it in their `compatibility`
   frontmatter, and the tool surfaces its stderr as `Error: …`.
 - **Stale spec context** — the injected context is cached per root and refreshes

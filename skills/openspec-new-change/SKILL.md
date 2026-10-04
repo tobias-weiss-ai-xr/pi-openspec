@@ -1,69 +1,88 @@
 ---
 name: openspec-new-change
-description: Scaffold a new OpenSpec change with the native CLI (`openspec new change`). Use when the user wants to start fresh work on a new change, before/without generating all artifacts. Always use before propose or continue when the change does not yet exist.
+description: Start a new OpenSpec change using the experimental artifact workflow. Use when the user wants to create a new feature, fix, or modification with a structured step-by-step approach. Also use when the user says "openspec new change" or "opsx new".
 allowed-tools: Bash(openspec:*)
 license: MIT
-compatibility: Requires openspec CLI >= 1.9.0.
+compatibility: Requires openspec CLI.
 metadata:
   author: openspec
   version: "1.0"
-  generatedBy: "1.9.0"
+  generatedBy: "1.14.0"
 ---
 
-Scaffold a new OpenSpec change with `openspec new change`.
+Start a new change using the experimental artifact-driven approach.
 
-**Store selection:** If the user names a store (a store is a standalone OpenSpec repo registered on this machine) or the work lives in one, run `openspec store list --json` to discover registered store ids, then pass `--store <id>` on the commands that read or write specs and changes (`new change`, `status`, `instructions`, `list`, `show`, `validate`, `archive`, `doctor`, `context`). Other commands do not take the flag. Hints printed by commands already carry the flag; keep it on follow-ups. Without a store, commands act on the nearest local `openspec/` root.
+**Store selection:** If the user names a store (a store is a standalone OpenSpec repo registered on this machine) or the work lives in one, run `openspec store list --json` to discover registered store ids, then pass `--store <id>` on the commands that read or write specs and changes (`new change`, `status`, `instructions`, `list`, `show`, `validate`, `archive`, `doctor`, `context`, `schemas`, `view`). Once selected, treat `--store <id>` as sticky for the rest of the workflow. Every unscoped example of those commands below is shorthand: before running it, append the flag. For example, run `openspec status --change "<name>" --json --store "<id>"`, not the unscoped form shown below. Other commands do not take the flag. Hints printed by commands already carry the flag; keep it on follow-ups. Without a store, commands act on the nearest local `openspec/` root.
 
-**Input**: A change name (kebab-case) or a description from which to derive one (e.g., "add user authentication" → `add-user-auth`).
+**Project check:** These steps expect a project that already uses OpenSpec. Before the first step that writes anything (`new change`, `archive`, `sync specs`, or authoring an artifact file), confirm the project has a root: run `openspec list --json` (with `--store <id>` when a store is selected, since the store is then the root) and read `root`. A root object means the project is set up. `"root": null` means it is not - there is no `openspec/` directory here, and a write such as `openspec new change` would create one as a side effect. The command also exits non-zero, which is that answer rather than a broken CLI, so read the JSON instead of retrying or working around it.
+
+One `"root": null` is not about setup: when a `status` error message starts with `Declared in` or `Invalid store declaration in` and names this project's `openspec/config.yaml` (or `config.yml`), the project does use OpenSpec through a store it declares, which this machine cannot resolve (the store is not registered, or the `store:` line is malformed). Do not treat it as uninitialized and skip the branches below: stop before writing and show the user that error's `message` and `fix`.
+
+Otherwise, with no root, what happens next depends on how this workflow was reached:
+
+- **Auto-selected**: you chose this workflow yourself, without the user naming OpenSpec, naming this skill, or running its slash command. Stop using OpenSpec and answer the request normally, as you would with no OpenSpec installed. Do not ask them to set anything up and do not mention OpenSpec setup.
+- **Explicit OpenSpec request**: the user named OpenSpec, named this skill, or ran its slash command. Stop before writing and ask how to proceed: set this project up (`openspec init`), target a store they already have (`--store <id>`), or continue without OpenSpec for this request. Wait for their answer.
+
+In both branches, never create the root as a side effect: do not run `openspec init` until the user asks for it, do not hand-create `openspec/` files, and do not let a command create it.
+
+**Input**: The user's request should include a change name (kebab-case) OR a description of what they want to build.
 
 **Steps**
 
-1. **If no clear input, ask**
+1. **If no clear input provided, ask what they want to build**
 
-   Use the **AskUserQuestion tool** (open-ended, no preset options) to ask:
+   Ask the user (open-ended, no preset options):
    > "What change do you want to work on? Describe what you want to build or fix."
 
-   Derive a kebab-case name from the description.
+   From their description, derive a kebab-case name (e.g., "add user authentication" → `add-user-auth`).
+
    **IMPORTANT**: Do NOT proceed without understanding what the user wants to build.
 
-2. **Check the name does not collide**
+2. **Determine the workflow schema**
 
-   ```bash
-   openspec list --json
-   ```
-   If a change with that name already exists, ask whether to continue it (`/opsx-continue`), update it (`/opsx-update`), or pick another name.
+   Use the default schema (omit `--schema`) unless the user explicitly requests a different workflow.
 
-3. **Create the change scaffold (native)**
+   **Use a different schema only if the user mentions:**
+   - A specific schema name → use `--schema <name>`
+   - "show workflows" or "what workflows" → run `openspec schemas --json` and let them choose
 
+   **Otherwise**: Omit `--schema` to use the default.
+
+3. **Create the change directory**
    ```bash
    openspec new change "<name>"
    ```
-   This creates a scaffolded change directory in the planning home resolved by the CLI (schema-driven by default). `openspec new` does NOT take `--store`.
+   Add `--schema <name>` only if the user requested a specific workflow.
+   This creates a scaffolded change in the planning home resolved by the CLI.
 
-4. **Route to the next step**
+4. **Show the artifact status**
+   ```bash
+   openspec status --change "<name>" --json
+   ```
+   Use the returned `planningHome`, `changeRoot`, `artifactPaths`, and `nextSteps` instead of assuming repo-local paths.
 
-   - If the user wants the full proposal/design/tasks upfront → suggest `/opsx-propose "<name>"`.
-   - If they want to build artifacts incrementally → suggest `/opsx-continue "<name>"`.
-   - If they only wanted the scaffold (e.g., they will write files themselves) → stop here.
+5. **Get instructions for the first artifact**
+   The first artifact depends on the schema (e.g., `proposal` for spec-driven).
+   Check the status output to find the first artifact with status "ready".
+   ```bash
+   openspec instructions <first-artifact-id> --change "<name>"
+   ```
+   This outputs the template and context for creating the first artifact.
 
-5. **Show where the change lives**
+6. **STOP and wait for user direction**
 
-   Run `openspec status --change "<name>"` and report the change root / planning home from the output.
+**Output**
 
-**Example Output**
-
-```
-## New Change
-
-**Name:** add-user-auth
-**Created at:** openspec/changes/add-user-auth/ (schema: spec-driven)
-
-Ready to continue? Run `/opsx-continue add-user-auth` to build the artifacts.
-```
+After completing the steps, summarize:
+- Change name and location
+- Schema/workflow being used and its artifact sequence
+- Current status (0/N artifacts complete)
+- The template for the first artifact
+- Prompt: "Ready to create the first artifact? Just describe what this change is about and I'll draft it, or ask me to continue."
 
 **Guardrails**
-- Always derive or confirm the change name before creating
-- Use the native `openspec new change` command — do NOT `mkdir` the change dir by hand
-- Check for name collisions first
-- `openspec new` does not accept `--store`; omit it even when a store is in play
-- Route to propose/continue rather than duplicating their logic
+- Do NOT create any artifacts yet - just show the instructions
+- Do NOT advance beyond showing the first artifact template
+- If the name is invalid (not kebab-case), ask for a valid name
+- If a change with that name already exists, suggest continuing that change instead
+- Pass --schema if using a non-default workflow
