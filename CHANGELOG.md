@@ -20,11 +20,11 @@ All notable changes to `openspec-pi`.
   a generated gallery asset (`assets/` now in the tarball).
 - `scripts/check.mjs` extended: verifies `files[]` entries and `pi.image` asset
   exist on disk and every `/opsx-*` prompt is documented in the README.
-- Added `prepack` gate (`npm run check` runs before `npm pack`/`npm publish`),
-  a `specs` CI job (installs the OpenSpec CLI, runs `check:full`, and
-  `scripts/smoke-ext.mjs` JIT-loads the extension), and a hygiene gate in the
-  publish workflow.
-- `publish.yml` now publishes with `--provenance` (signed builds).
+- Added `prepack` gate (`npm run check` runs before `npm pack`/`npm publish`)
+  and a `specs` CI job (installs the OpenSpec CLI, runs `check:full`; plus
+  `scripts/smoke-ext.mjs` JIT-loads the extension).
+- **Publishing is manual**: no tag-driven publish workflow. Release with
+  `npm publish --access public` from the repo root (see `DEVELOPING.md`).
 - CI triggers broadened to `assets/`, `README.md`, and workflow files.
 
 ## [0.2.0] - 2025-09

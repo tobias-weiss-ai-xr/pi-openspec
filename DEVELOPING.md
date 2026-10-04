@@ -69,13 +69,19 @@ tool/command registration, correct CLI argv for curated commands, and context
 injection behavior. It locates pi's bundled runtime deps via `PI_NODE_MODULES`
 (falls back to the default Windows pi install).
 
-## Releasing
+## Releasing (manual)
 
-Publishing is tag-driven (`.github/workflows/publish.yml`):
+Publishing is a manual task — there is no CI publish workflow. From the repo
+root, logged in to npm:
 
-- `npm run check` runs as the publish gate; `npm publish --provenance` signs the
-  build with GitHub-attested provenance.
-- Create `v<version>` tags for released versions; keep `package.json` version in
-  step with the tag.
-- After release, refresh local pi installs (`pi install` re-pull) so sessions
-  pick up the new skills (skills load at agent start).
+```bash
+npm whoami          # confirm you're logged in (npm login if not)
+npm publish --access public
+```
+
+The `prepack` script runs `npm run check` automatically before packing, so a
+broken tarball never reaches the registry. Bump `package.json` version per
+release; `git tag v<version>` is optional (tags carry no publish trigger).
+
+After release, refresh local pi installs (`pi install` re-pull) so sessions
+pick up the new skills (skills load at agent start).
