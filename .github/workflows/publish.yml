@@ -19,6 +19,12 @@ jobs:
           registry-url: "https://registry.npmjs.org"
       - name: Packaging hygiene gate
         run: npm run check
+      - name: Require NPM_TOKEN
+        run: |
+          if [ -z "${{ secrets.NPM_TOKEN }}" ]; then
+            echo "::error::NPM_TOKEN secret is missing. Create an npm automation token (https://www.npmjs.com/settings/tokens) and add it as the NPM_TOKEN repo secret (Settings > Secrets and variables > Actions)."
+            exit 1
+          fi
       - run: npm publish --access public --provenance
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
