@@ -12,13 +12,9 @@ own planning.
 ### Requirement: CLI 1.14.0 parity
 
 The shipped skills, prompts, and extension MUST target the OpenSpec CLI 1.14.0
-surface: `openspec new change`, `status --change --json`, `instructions
-<artifact> --change --json`, `archive <change> --json` (native), `store list
---json`, `doctor`, `context`, `list --specs`, positional `show`/`validate`,
-and the 12 workflow profiles (`new`, `propose`, `explore`, `continue`, `apply`,
-`ff`, `update`, `sync`, `verify`, `archive`, `bulk-archive`, `onboard`).
-`feedback` is a plain CLI command (`openspec feedback <msg>`), not a workflow
-skill, and is reachable via `/ospec feedback` passthrough.
+surface (`new change`, `status --change --json`, `instructions <artifact>
+--change --json`, native `archive`, `store list --json`, `doctor`, `context`,
+`list --specs`, positional `show`/`validate`, and the 12 workflow profiles).
 
 #### Scenario: Archive uses the native command
 - GIVEN a completed change
@@ -28,7 +24,14 @@ skill, and is reachable via `/ospec feedback` passthrough.
 #### Scenario: Skills match the upstream tool output
 - GIVEN a sync against a newer `openspec init --tools pi` output
 - WHEN the packaged skills/prompts diverge from upstream
-- THEN they are regenerated to match, including any new workflow profiles (e.g. `ff`) and removal of retired ones (e.g. `feedback`)
+- THEN they are regenerated to match the 12 profiles (`new`, `propose`,
+  `explore`, `continue`, `apply`, `ff`, `update`, `sync`, `verify`, `archive`,
+  `bulk-archive`, `onboard`) and retired ones are removed
+
+#### Scenario: Feedback is a plain command
+- GIVEN the CLI exposes `openspec feedback <msg>`
+- WHEN a user wants to submit feedback
+- THEN it is reachable via `/ospec feedback` passthrough, not a workflow skill
 
 ### Requirement: Extension reliability
 
