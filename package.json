@@ -9,14 +9,15 @@
     "type": "git",
     "url": "git+https://github.com/tobias-weiss-ai-xr/pi-openspec.git"
   },
-  "files": ["extensions", "skills", "prompts", "README.md", "LICENSE"],
+  "files": ["extensions", "skills", "prompts", "assets", "README.md", "LICENSE"],
   "peerDependencies": {
     "@earendil-works/pi-coding-agent": "*",
     "typebox": "*"
   },
   "scripts": {
     "check": "node scripts/check.mjs",
-    "check:full": "npm run check && openspec validate --all --strict"
+    "check:full": "npm run check && openspec validate --all --strict",
+    "prepack": "npm run check"
   },
   "pi": {
     "extensions": ["./extensions"],

@@ -77,6 +77,39 @@ The exact same slash commands and skills that `openspec init --tools pi` generat
 /ospec doctor       # check relationship health
 /ospec context      # working context
 /ospec validate --all --strict --json
+
+### Registered stores
+
+For a change that lives in a registered standalone store (not the local `openspec/`
+root), pass the store id explicitly — to the tool, the command, or the skills:
+
+```bash
+openspec store list --json   # discover registered store ids
+/ospec status --store <id>
+/ospec list --json --store <id>
+```
+
+When running inside a registered store's root, the agent auto-discovers it and
+injects its `openspec context` even without a local `openspec/` directory.
+
+## Troubleshooting
+
+- **`openspec: command not found`** — the CLI ≥ 1.9.0 is required on `PATH`:
+  `npm install -g @fission-ai/openspec`. Skills declare it in their `compatibility`
+  frontmatter, and the tool surfaces its stderr as `Error: …`.
+- **Stale spec context** — the injected context is cached per root and refreshes
+  when the spec tree changes (config.yaml mtime + changes directory). If it looks
+  stale after an explicit edit, run `/ospec context` to force a refresh.
+- **Tool says `Unsupported command`** — the curated tool covers status/doctor/context/
+  list/show/validate/instructions/archive/store/spec/new. For anything else (e.g.
+  `openspec feedback`) use `/ospec <command>` passthrough.
+- **No `/opsx-*` commands after install** — restart pi; slash commands and skills
+  are loaded at agent start.
+
+## Uninstall
+
+```bash
+pi uninstall openspec-pi
 ```
 
 ## Development
@@ -85,9 +118,16 @@ The package self-hosts an OpenSpec root (`openspec/`) with a roadmap spec. To ke
 skills/prompts in sync with the CLI:
 
 ```bash
-npm run check          # validate skill/prompt pairing + referenced slash commands
+npm run check          # validate skill/prompt pairing + referenced slash commands + manifest/README consistency
 npm run check:full     # check + openspec validate --all (needs CLI on PATH)
 ```
+
+`npm run check` also runs automatically as a `prepack` gate before `npm pack` /
+`npm publish`, and both jobs run in CI (`check.yml`): a hygiene job and a
+`check:full` job that installs the OpenSpec CLI.
+
+Assets (e.g. the gallery image `assets/pi-openspec.png`) are checked to exist on
+disk and are included in the published tarball.
 
 ## License
 

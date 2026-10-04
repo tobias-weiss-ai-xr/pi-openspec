@@ -8,6 +8,8 @@
  *   3. Every skill has a matching prompt and vice versa (name mapping table).
  *   4. Every `/opsx-<name>` referenced anywhere in skills/prompts resolves to
  *      a shipped prompt file — no dangling workflow mentions.
+ *   5. Package manifest hygiene: `files[]` entries and `pi.image` asset exist,
+ *      and every shipped prompt / slash command is documented in the README.
  *
  * Exit code 1 on any violation (CI-safe).
  */
@@ -109,9 +111,27 @@ for (const m of allText.matchAll(/\/opsx-([a-z-]+)\b/g)) {
   if (!prompts.includes(stem)) errors.push(`dangling slash-command reference: /${stem}`);
 }
 
+// 5. package manifest + README hygiene
+const pkg = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"));
+for (const entry of pkg.files || []) {
+  if (!fs.existsSync(path.join(root, entry))) errors.push(`package.json: files entry '${entry}' does not exist`);
+}
+const image = (pkg.pi && pkg.pi.image) || "";
+// pi.image typically points at raw.githubusercontent.com/<owner>/<repo>/main/<path>
+const imagePath = image.replace(/^https?:\/\/raw\.githubusercontent\.com\/[^/]+\/[^/]+\/main\//, "");
+if (imagePath && !/^https?:\/\//.test(imagePath) && !fs.existsSync(path.join(root, imagePath))) {
+  errors.push(`package.json: pi.image asset missing on disk: '${imagePath}'`);
+}
+const readme = fs.readFileSync(path.join(root, "README.md"), "utf8");
+const docPrompts = new Set([...readme.matchAll(/\/opsx-([a-z-]+)\b/g)].map((m) => `opsx-${m[1]}`));
+const missingFromReadme = prompts.filter((p) => !docPrompts.has(p));
+if (missingFromReadme.length) errors.push(`README: /opsx-* undocumented for: ${missingFromReadme.join(", ")}`);
+const danglingReadme = [...docPrompts].filter((p) => !prompts.includes(p));
+if (danglingReadme.length) errors.push(`README: references prompt(s) not shipped: ${danglingReadme.join(", ")}`);
+
 if (errors.length) {
   console.error(`pi-openspec check: ${errors.length} problem(s)`);
   for (const e of errors) console.error(`  ✗ ${e}`);
   process.exit(1);
 }
-console.log(`pi-openspec check: OK (${skills.length} skills, ${prompts.length} prompts, no dangling /opsx-* refs)`);
+console.log(`pi-openspec check: OK (${skills.length} skills, ${prompts.length} prompts, manifest + README consistent)`);
