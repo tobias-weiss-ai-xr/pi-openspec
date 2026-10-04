@@ -25,6 +25,7 @@
     "assets",
     "README.md",
     "CHANGELOG.md",
+    "DEVELOPING.md",
     "LICENSE"
   ],
   "peerDependencies": {
