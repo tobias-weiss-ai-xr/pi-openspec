@@ -7,13 +7,19 @@ on:
       - "skills/**"
       - "prompts/**"
       - "scripts/**"
+      - "assets/**"
+      - "README.md"
       - "package.json"
+      - ".github/workflows/**"
   pull_request:
     paths:
       - "skills/**"
       - "prompts/**"
       - "scripts/**"
+      - "assets/**"
+      - "README.md"
       - "package.json"
+      - ".github/workflows/**"
 
 jobs:
   hygiene:
